@@ -35,11 +35,12 @@ Loads a [CoRal-project](https://huggingface.co/CoRal-project) Danish ASR model f
 |---|---|---|
 | model_name | COMBO | Model to load |
 | device | COMBO | Device to run on (auto, cpu, cuda) |
-| chunk_length_s | FLOAT | Audio chunk length in seconds for long audio (default: 30.0) |
 
 | Output | Type | Description |
 |---|---|---|
 | model | CORAL_ASR_MODEL | Loaded ASR pipeline |
+
+> **Note:** The Whisper model has a 30-second context window. For longer audio, use the **Audio Segment** node to split the audio into segments before transcribing with **CoRal Transcribe (Batch)**. The Wav2Vec2 model handles variable-length audio natively but may still benefit from segmentation for very long files.
 
 ---
 

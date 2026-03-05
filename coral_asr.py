@@ -22,19 +22,15 @@ def _prepare_audio(audio):
 def _transcribe(model, audio, prompt=""):
     """Run ASR on a single ComfyUI AUDIO dict using a loaded CoRal model."""
     pipe = model["pipeline"]
-    chunk_length_s = model["chunk_length_s"]
     is_whisper = model["is_whisper"]
 
     wav, sample_rate = _prepare_audio(audio)
 
-    kwargs = {"chunk_length_s": chunk_length_s}
-    if is_whisper:
-        gen_kwargs = {"language": "da", "task": "transcribe"}
-        if prompt:
-            gen_kwargs["prompt_ids"] = pipe.tokenizer.get_prompt_ids(
-                prompt, return_tensors="pt"
-            )
-        kwargs["generate_kwargs"] = gen_kwargs
+    kwargs = {}
+    if is_whisper and prompt:
+        prompt_ids = pipe.tokenizer.get_prompt_ids(prompt, return_tensors="pt")
+        prompt_ids = prompt_ids.to(pipe.model.device)
+        kwargs["generate_kwargs"] = {"prompt_ids": prompt_ids}
 
     result = pipe({"raw": wav, "sampling_rate": sample_rate}, **kwargs)
     return result["text"]
@@ -49,16 +45,6 @@ class CoRalASRModelLoader:
             "required": {
                 "model_name": (MODEL_OPTIONS,),
                 "device": (["auto", "cpu", "cuda"],),
-                "chunk_length_s": (
-                    "FLOAT",
-                    {
-                        "default": 30.0,
-                        "min": 1.0,
-                        "max": 300.0,
-                        "step": 1.0,
-                        "tooltip": "Audio chunk length in seconds for processing long audio",
-                    },
-                ),
             },
         }
 
@@ -72,11 +58,18 @@ class CoRalASRModelLoader:
         "Supports Whisper (1.5B) and Wav2Vec2 (315M) architectures."
     )
 
-    def load_model(self, model_name, device, chunk_length_s):
+    def load_model(self, model_name, device):
         if device == "auto":
             dev = comfy.model_management.get_torch_device()
         else:
             dev = torch.device(device)
+
+        # Pipeline handles device placement most reliably with int (CUDA
+        # index) or string "cpu", rather than a torch.device object.
+        if dev.type == "cuda":
+            pipe_device = dev.index if dev.index is not None else 0
+        else:
+            pipe_device = dev.type
 
         model_id = f"CoRal-project/{model_name}"
         is_whisper = "whisper" in model_name
@@ -84,13 +77,12 @@ class CoRalASRModelLoader:
         pipe = hf_pipeline(
             "automatic-speech-recognition",
             model=model_id,
-            device=dev,
+            device=pipe_device,
         )
 
         return (
             {
                 "pipeline": pipe,
-                "chunk_length_s": chunk_length_s,
                 "is_whisper": is_whisper,
             },
         )
