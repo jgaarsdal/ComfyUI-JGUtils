@@ -13,7 +13,7 @@ Splits audio into fixed-length segments. When the total duration is not evenly d
 | Input | Type | Description |
 |---|---|---|
 | audio | AUDIO | Input audio |
-| segment_duration | FLOAT | Duration of each segment in seconds (default: 5.0) |
+| segment_duration | FLOAT | Duration of each segment in seconds (default: 5.0, max: 29.0) |
 
 | Output | Type | Description |
 |---|---|---|
@@ -40,7 +40,7 @@ Loads a [CoRal-project](https://huggingface.co/CoRal-project) Danish ASR model f
 |---|---|---|
 | model | CORAL_ASR_MODEL | Loaded ASR pipeline |
 
-> **Note:** The Whisper model has a 30-second context window. For longer audio, use the **Audio Segment** node to split the audio into segments before transcribing with **CoRal Transcribe (Batch)**. The Wav2Vec2 model handles variable-length audio natively but may still benefit from segmentation for very long files.
+> **Note:** The Whisper model has a 30-second context window. Segments must be under 30 seconds to avoid hallucinations — the **Audio Segment** node enforces a 29-second maximum. For longer audio, split it into segments with **Audio Segment** and transcribe with **CoRal Transcribe (Batch)**. The Wav2Vec2 model handles variable-length audio natively but may still benefit from segmentation for very long files.
 
 ---
 

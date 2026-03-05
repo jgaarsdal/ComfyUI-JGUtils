@@ -14,9 +14,9 @@ class AudioSegment:
                     {
                         "default": 5.0,
                         "min": 0.1,
-                        "max": 3600.0,
+                        "max": 29.0,
                         "step": 0.1,
-                        "tooltip": "Duration of each segment in seconds",
+                        "tooltip": "Duration of each segment in seconds (max 29 s for Whisper compatibility)",
                     },
                 ),
             },

@@ -27,14 +27,10 @@ def _transcribe(model, audio, prompt=""):
     wav, sample_rate = _prepare_audio(audio)
 
     kwargs = {}
-    if is_whisper:
-        # Whisper requires return_timestamps for audio at or above 30 seconds
-        # (>3000 mel features) to enable the long-form generation path.
-        kwargs["return_timestamps"] = True
-        if prompt:
-            prompt_ids = pipe.tokenizer.get_prompt_ids(prompt, return_tensors="pt")
-            prompt_ids = prompt_ids.to(pipe.model.device)
-            kwargs["generate_kwargs"] = {"prompt_ids": prompt_ids}
+    if is_whisper and prompt:
+        prompt_ids = pipe.tokenizer.get_prompt_ids(prompt, return_tensors="pt")
+        prompt_ids = prompt_ids.to(pipe.model.device)
+        kwargs["generate_kwargs"] = {"prompt_ids": prompt_ids}
 
     result = pipe({"raw": wav, "sampling_rate": sample_rate}, **kwargs)
     return result["text"]
