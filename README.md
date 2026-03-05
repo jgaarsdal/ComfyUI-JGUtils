@@ -153,6 +153,22 @@ Joins a list of text strings into a single string using a delimiter. Pairs well 
 |---|---|---|
 | text | STRING | Joined text |
 
+---
+
+### Free VRAM
+
+**Category:** `JG Utils/Utils`
+
+Unloads all cached models from VRAM and empties the GPU memory cache. Accepts any input type and passes it through unchanged, so you can insert it between any two connected nodes to force VRAM cleanup at that point in the workflow.
+
+| Input | Type | Description |
+|---|---|---|
+| any_input | ANY | Any value to pass through |
+
+| Output | Type | Description |
+|---|---|---|
+| any_output | ANY | Passthrough of the input value |
+
 ## Installation
 
 Clone this repository into your ComfyUI `custom_nodes` directory:
