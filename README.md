@@ -130,6 +130,7 @@ Splits audio into per-speaker-turn segments using pyannote speaker diarization. 
 | num_speakers | INT (optional) | Exact number of speakers. 0 = auto-detect (default: 0). |
 | min_speakers | INT (optional) | Minimum speakers when auto-detecting (default: 1) |
 | max_speakers | INT (optional) | Maximum speakers when auto-detecting (default: 10) |
+| max_segment_length | FLOAT (optional) | Max segment duration in seconds. Longer turns are split into consecutive sub-segments with the same speaker label. 0 = no splitting (default: 0.0). |
 
 | Output | Type | Description |
 |---|---|---|

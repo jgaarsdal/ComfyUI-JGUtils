@@ -110,6 +110,20 @@ class SpeakerDiarize:
                         "tooltip": "Maximum number of speakers (ignored when num_speakers > 0)",
                     },
                 ),
+                "max_segment_length": (
+                    "FLOAT",
+                    {
+                        "default": 0.0,
+                        "min": 0.0,
+                        "max": 3600.0,
+                        "step": 0.1,
+                        "tooltip": (
+                            "Maximum segment duration in seconds. Speaker turns longer "
+                            "than this are split into consecutive sub-segments with the "
+                            "same speaker label. 0 = no splitting."
+                        ),
+                    },
+                ),
             },
         }
 
@@ -129,7 +143,8 @@ class SpeakerDiarize:
         "Pairs well with CoRal Transcribe (Batch) for speaker-attributed transcription."
     )
 
-    def diarize(self, audio, model, num_speakers=0, min_speakers=1, max_speakers=10):
+    def diarize(self, audio, model, num_speakers=0, min_speakers=1,
+                max_speakers=10, max_segment_length=0.0):
         pipeline = model["pipeline"]
         waveform = audio["waveform"]  # (batch, channels, samples)
         sample_rate = audio["sample_rate"]
@@ -153,6 +168,8 @@ class SpeakerDiarize:
 
         # Extract speaker turns from the annotation
         diarization = output.speaker_diarization
+        max_samples = (round(max_segment_length * sample_rate)
+                       if max_segment_length > 0 else 0)
 
         segments = []
         speakers = []
@@ -165,9 +182,19 @@ class SpeakerDiarize:
             if end_sample <= start_sample:
                 continue
 
-            chunk = waveform[..., start_sample:end_sample].clone()
-            segments.append({"waveform": chunk, "sample_rate": sample_rate})
-            speakers.append(speaker)
+            # Split long segments into consecutive sub-segments
+            if max_samples > 0 and (end_sample - start_sample) > max_samples:
+                pos = start_sample
+                while pos < end_sample:
+                    sub_end = min(pos + max_samples, end_sample)
+                    chunk = waveform[..., pos:sub_end].clone()
+                    segments.append({"waveform": chunk, "sample_rate": sample_rate})
+                    speakers.append(speaker)
+                    pos = sub_end
+            else:
+                chunk = waveform[..., start_sample:end_sample].clone()
+                segments.append({"waveform": chunk, "sample_rate": sample_rate})
+                speakers.append(speaker)
 
         # Handle edge case: no speech detected
         if not segments:
