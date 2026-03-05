@@ -1,8 +1,11 @@
 import torch
+import torchaudio
 from transformers import pipeline as hf_pipeline
 import comfy.model_management
 
 CORAL_ASR_MODEL_TYPE = "CORAL_ASR_MODEL"
+
+_ASR_SAMPLE_RATE = 16000
 
 MODEL_OPTIONS = [
     "roest-v3-whisper-1.5b",
@@ -11,12 +14,21 @@ MODEL_OPTIONS = [
 
 
 def _prepare_audio(audio):
-    """Convert a ComfyUI AUDIO dict to a mono float32 numpy array + sample rate."""
+    """Convert a ComfyUI AUDIO dict to a mono float32 numpy array at 16 kHz.
+
+    ComfyUI audio is typically 44.1 kHz but ASR models expect 16 kHz.
+    The HuggingFace ASR pipeline has a resampling bug (passes orig_freq
+    twice to torchaudio.functional.resample), so we resample here.
+    """
     waveform = audio["waveform"]  # (batch, channels, samples)
     sample_rate = audio["sample_rate"]
-    # Remove batch dim, average channels to mono, ensure float32 on CPU
-    wav = waveform.squeeze(0).mean(dim=0).cpu().float().numpy()
-    return wav, sample_rate
+    # Remove batch dim, average channels to mono
+    wav = waveform.squeeze(0).mean(dim=0, keepdim=True).float()
+    # Resample to 16 kHz if needed
+    if sample_rate != _ASR_SAMPLE_RATE:
+        wav = torchaudio.functional.resample(wav, sample_rate, _ASR_SAMPLE_RATE)
+    wav = wav.squeeze(0).cpu().numpy()
+    return wav, _ASR_SAMPLE_RATE
 
 
 def _transcribe(model, audio, prompt=""):
