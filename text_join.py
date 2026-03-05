@@ -28,6 +28,9 @@ class JoinText:
             sep = " "
         else:
             sep = delimiter[0]  # INPUT_IS_LIST makes all inputs lists
+        # Interpret common escape sequences so users can type \n, \t, etc.
+        # in the ComfyUI string widget and get actual whitespace characters.
+        sep = sep.replace("\\n", "\n").replace("\\t", "\t")
         return (sep.join(text),)
 
 
