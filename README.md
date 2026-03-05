@@ -95,6 +95,48 @@ Batch transcribes a list of audio clips to Danish text. Pairs well with the **Au
 |---|---|---|
 | texts | STRING[] | List of transcribed Danish texts |
 
+---
+
+### Speaker Diarization Model Loader
+
+**Category:** `JG Utils/ASR`
+
+Loads a [pyannote](https://github.com/pyannote/pyannote-audio) speaker diarization pipeline from HuggingFace. This is a gated model — you must:
+
+1. Accept the license at <https://hf.co/pyannote/speaker-diarization-community-1>
+2. Provide a HuggingFace auth token (create one at <https://hf.co/settings/tokens>)
+
+| Input | Type | Description |
+|---|---|---|
+| device | COMBO | Device to run on (auto, cpu, cuda) |
+| hf_token | STRING (optional) | HuggingFace auth token. Falls back to `HF_TOKEN` env var if empty. |
+
+| Output | Type | Description |
+|---|---|---|
+| model | DIARIZATION_MODEL | Loaded diarization pipeline |
+
+---
+
+### Speaker Diarize
+
+**Category:** `JG Utils/ASR`
+
+Splits audio into per-speaker-turn segments using pyannote speaker diarization. Each output segment contains one speaker's turn in chronological order. Pairs well with **CoRal Transcribe (Batch)** for speaker-attributed transcription.
+
+| Input | Type | Description |
+|---|---|---|
+| audio | AUDIO | Audio to diarize |
+| model | DIARIZATION_MODEL | Loaded diarization model |
+| num_speakers | INT (optional) | Exact number of speakers. 0 = auto-detect (default: 0). |
+| min_speakers | INT (optional) | Minimum speakers when auto-detecting (default: 1) |
+| max_speakers | INT (optional) | Maximum speakers when auto-detecting (default: 10) |
+
+| Output | Type | Description |
+|---|---|---|
+| segments | AUDIO[] | Audio segments, one per speaker turn |
+| speakers | STRING[] | Speaker label for each segment (e.g. SPEAKER_00) |
+| length | INT | Number of segments |
+
 ## Installation
 
 Clone this repository into your ComfyUI `custom_nodes` directory:
@@ -104,7 +146,7 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/jgaarsdal/ComfyUI-JGUtils.git
 ```
 
-Then restart ComfyUI. Dependencies (`transformers`) will be installed automatically if you use [ComfyUI Manager](https://github.com/ltdrdata/ComfyUI-Manager), or you can install them manually:
+Then restart ComfyUI. Dependencies (`transformers`, `pyannote.audio`) will be installed automatically if you use [ComfyUI Manager](https://github.com/ltdrdata/ComfyUI-Manager), or you can install them manually:
 
 ```bash
 pip install -r requirements.txt
