@@ -22,6 +22,23 @@ Splits audio into fixed-length segments. When the total duration is not evenly d
 
 ---
 
+### Resample Audio
+
+**Category:** `JG Utils/Audio`
+
+Resamples audio to a target sample rate using torchaudio. Useful for preparing audio for ASR models that expect 16 kHz input, or for converting between sample rates in general.
+
+| Input | Type | Description |
+|---|---|---|
+| audio | AUDIO | Input audio |
+| sample_rate | INT | Target sample rate in Hz (default: 44100) |
+
+| Output | Type | Description |
+|---|---|---|
+| audio | AUDIO | Resampled audio |
+
+---
+
 ### CoRal ASR Model Loader
 
 **Category:** `JG Utils/ASR`
