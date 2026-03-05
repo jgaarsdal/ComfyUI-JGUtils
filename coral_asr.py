@@ -31,20 +31,13 @@ def _prepare_audio(audio):
     return wav, _ASR_SAMPLE_RATE
 
 
-def _transcribe(model, audio, prompt=""):
+def _transcribe(model, audio):
     """Run ASR on a single ComfyUI AUDIO dict using a loaded CoRal model."""
     pipe = model["pipeline"]
-    is_whisper = model["is_whisper"]
 
     wav, sample_rate = _prepare_audio(audio)
 
-    kwargs = {}
-    if is_whisper and prompt:
-        prompt_ids = pipe.tokenizer.get_prompt_ids(prompt, return_tensors="pt")
-        prompt_ids = prompt_ids.to(pipe.model.device)
-        kwargs["generate_kwargs"] = {"prompt_ids": prompt_ids}
-
-    result = pipe({"raw": wav, "sampling_rate": sample_rate}, **kwargs)
+    result = pipe({"raw": wav, "sampling_rate": sample_rate})
     return result["text"]
 
 
@@ -84,7 +77,6 @@ class CoRalASRModelLoader:
             pipe_device = dev.type
 
         model_id = f"CoRal-project/{model_name}"
-        is_whisper = "whisper" in model_name
 
         pipe = hf_pipeline(
             "automatic-speech-recognition",
@@ -92,12 +84,7 @@ class CoRalASRModelLoader:
             device=pipe_device,
         )
 
-        return (
-            {
-                "pipeline": pipe,
-                "is_whisper": is_whisper,
-            },
-        )
+        return ({"pipeline": pipe},)
 
 
 class CoRalTranscribe:
@@ -110,15 +97,6 @@ class CoRalTranscribe:
                 "audio": ("AUDIO",),
                 "model": (CORAL_ASR_MODEL_TYPE,),
             },
-            "optional": {
-                "prompt": (
-                    "STRING",
-                    {
-                        "default": "",
-                        "tooltip": "Optional text prompt to guide Whisper transcription. Ignored for Wav2Vec2 models.",
-                    },
-                ),
-            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -128,8 +106,8 @@ class CoRalTranscribe:
     CATEGORY = "JG Utils/ASR"
     DESCRIPTION = "Transcribes a single audio clip to Danish text using a CoRal ASR model."
 
-    def transcribe(self, audio, model, prompt=""):
-        text = _transcribe(model, audio, prompt=prompt)
+    def transcribe(self, audio, model):
+        text = _transcribe(model, audio)
         return (text,)
 
 
@@ -142,15 +120,6 @@ class CoRalTranscribeBatch:
             "required": {
                 "audio": ("AUDIO",),
                 "model": (CORAL_ASR_MODEL_TYPE,),
-            },
-            "optional": {
-                "prompt": (
-                    "STRING",
-                    {
-                        "default": "",
-                        "tooltip": "Optional text prompt to guide Whisper transcription. Ignored for Wav2Vec2 models.",
-                    },
-                ),
             },
         }
 
@@ -166,10 +135,9 @@ class CoRalTranscribeBatch:
         "Pairs well with the Audio Segment node."
     )
 
-    def transcribe(self, audio, model, prompt=None):
+    def transcribe(self, audio, model):
         mdl = model[0]  # INPUT_IS_LIST makes all inputs lists; model is the same for all
-        p = prompt[0] if prompt is not None else ""
-        texts = [_transcribe(mdl, a, prompt=p) for a in audio]
+        texts = [_transcribe(mdl, a) for a in audio]
         return (texts,)
 
 

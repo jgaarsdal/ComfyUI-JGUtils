@@ -45,7 +45,7 @@ Resamples audio to a target sample rate using torchaudio. Useful for preparing a
 
 Loads a [CoRal-project](https://huggingface.co/CoRal-project) Danish ASR model from HuggingFace. Two model architectures are supported:
 
-- **roest-v3-whisper-1.5b** -- Whisper-based, 1.5B parameters. Supports optional text prompts.
+- **roest-v3-whisper-1.5b** -- Whisper-based, 1.5B parameters.
 - **roest-v3-wav2vec2-315m** -- Wav2Vec2-based, 315M parameters. Faster and lighter.
 
 | Input | Type | Description |
@@ -71,7 +71,6 @@ Transcribes a single audio clip to Danish text using a loaded CoRal ASR model.
 |---|---|---|
 | audio | AUDIO | Audio to transcribe |
 | model | CORAL_ASR_MODEL | Loaded CoRal ASR model |
-| prompt | STRING (optional) | Text prompt to guide Whisper transcription. Ignored for Wav2Vec2. |
 
 | Output | Type | Description |
 |---|---|---|
@@ -89,7 +88,6 @@ Batch transcribes a list of audio clips to Danish text. Pairs well with the **Au
 |---|---|---|
 | audio | AUDIO[] | List of audio clips to transcribe |
 | model | CORAL_ASR_MODEL | Loaded CoRal ASR model |
-| prompt | STRING (optional) | Text prompt to guide Whisper transcription. Ignored for Wav2Vec2. |
 
 | Output | Type | Description |
 |---|---|---|
@@ -137,6 +135,23 @@ Splits audio into per-speaker-turn segments using pyannote speaker diarization. 
 | segments | AUDIO[] | Audio segments, one per speaker turn |
 | speakers | STRING[] | Speaker label for each segment (e.g. SPEAKER_00) |
 | length | INT | Number of segments |
+
+---
+
+### Join Text
+
+**Category:** `JG Utils/Text`
+
+Joins a list of text strings into a single string using a delimiter. Pairs well with **CoRal Transcribe (Batch)** for combining transcription segments into a single transcript.
+
+| Input | Type | Description |
+|---|---|---|
+| text | STRING[] | List of text strings to join |
+| delimiter | STRING (optional) | Delimiter between strings (default: " ") |
+
+| Output | Type | Description |
+|---|---|---|
+| text | STRING | Joined text |
 
 ## Installation
 
