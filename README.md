@@ -155,6 +155,24 @@ Joins a list of text strings into a single string using a delimiter. Pairs well 
 
 ---
 
+### Save Text to DOCX
+
+**Category:** `JG Utils/Text`
+
+Saves text to a `.docx` file. Accepts a single string or a list of strings — each string becomes a separate paragraph in the document. Files are named with an auto-incrementing counter (`prefix_00000.docx`, `prefix_00001.docx`, ...) so existing files are never overwritten.
+
+| Input | Type | Description |
+|---|---|---|
+| text | STRING or STRING[] | Text to save. Each string becomes a paragraph. |
+| folder_path | STRING | Directory to save the file in |
+| filename_prefix | STRING | Filename prefix (default: "document") |
+
+| Output | Type | Description |
+|---|---|---|
+| file_path | STRING | Absolute path of the saved .docx file |
+
+---
+
 ### Free VRAM
 
 **Category:** `JG Utils/Utils`
@@ -178,7 +196,7 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/jgaarsdal/ComfyUI-JGUtils.git
 ```
 
-Then restart ComfyUI. Dependencies (`transformers`, `pyannote.audio`) will be installed automatically if you use [ComfyUI Manager](https://github.com/ltdrdata/ComfyUI-Manager), or you can install them manually:
+Then restart ComfyUI. Dependencies (`transformers`, `pyannote.audio`, `python-docx`) will be installed automatically if you use [ComfyUI Manager](https://github.com/ltdrdata/ComfyUI-Manager), or you can install them manually:
 
 ```bash
 pip install -r requirements.txt
